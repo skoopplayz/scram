@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css" integrity="sha512-kJlvECunwXftkPwyvHbclArO8wszgBGisiLeuDFwNM8ws+wKIw0sv1os3ClWZOcrEB2eRXULYUsm8OVRGJKwGA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        transition: background-color 0.2s ease; /* Makes theme shifting smooth */
+      }
+      body {
+        display: flex;
+        flex-direction: column; 
+        align-items: center;   
+        justify-content: center; 
+      }
+    </style>
+</head>
+<body>
+  <img src="ducky.png" alt="ducky">
+  <div class="search-container">
+    <i class="ri-search-line search-icon"></i>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search the pond...">
+  </div>
+
+  <script>
+    function applyLocalTheme() {
+      const themeColors = {
+        light:    ['#f7f7f7', '#ffffff'],
+        dark:     ['#121212', '#1e1e1e'],
+        ducky:    ['#FFF9E6', '#FFF0B3'],
+        midnight: ['#050505', '#0d0d0d'],
+        emerald:  ['#e8f5e9', '#c8e6c9'],
+        rose:     ['#fce4ec', '#f8bbd0'],
+        cyber:    ['#0f051d', '#1a0b2e'],
+        sunset:   ['#fdf2e9', '#fadbd8']
+      };
+
+      const savedTheme = localStorage.getItem('pond-theme') || 'light';
+      const colors = themeColors[savedTheme];
+      
+      if (colors) {
+        document.body.style.backgroundColor = colors[1];
+      }
+    }
+
+    // --- SCRAMJET SEARCH LOGIC ---
+    const searchInput = document.getElementById('search-input');
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (query) {
+          // If it's a valid URL, encode it; otherwise, treat it as a Google search query
+          let url = query;
+          if (!/^https?:\/\//i.test(query) && !query.includes('.')) {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+          } else if (!/^https?:\/\//i.test(query)) {
+            url = 'http://' + query;
+          }
+
+          // Scramjet routing: prefixes the URL with the proxy service worker path
+          // Adjust window.__scramjet$config.prefix if your setup uses a custom prefix
+          const prefix = window.__scramjet$config?.prefix || '/service/';
+          
+          window.location.href = prefix + encodeURIComponent(url);
+        }
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', applyLocalTheme);
+    
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pond-theme') {
+        applyLocalTheme();
+      }
+    });
+  </script>
+</body>
+<link rel="stylesheet" href="style.css">
+</html>
