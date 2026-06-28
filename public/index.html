@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Pond Search</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css" />
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="/scramjet.config.js"></script>
+</head>
+<body>
+
+  <img src="ducky.png" alt="ducky">
+  
+  <div class="search-container">
+    <i class="ri-search-line search-icon"></i>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search the pond...">
+  </div>
+
+  <script>
+    // --- Theme Logic ---
+    function applyLocalTheme() {
+      const themeColors = {
+        light:    ['#f7f7f7', '#ffffff'],
+        dark:     ['#121212', '#1e1e1e'],
+        ducky:    ['#FFF9E6', '#FFF0B3'],
+        midnight: ['#050505', '#0d0d0d'],
+        emerald:  ['#e8f5e9', '#c8e6c9'],
+        rose:     ['#fce4ec', '#f8bbd0'],
+        cyber:    ['#0f051d', '#1a0b2e'],
+        sunset:   ['#fdf2e9', '#fadbd8']
+      };
+
+      const savedTheme = localStorage.getItem('pond-theme') || 'light';
+      const colors = themeColors[savedTheme];
+      if (colors) {
+        document.body.style.backgroundColor = colors[1];
+      }
+    }
+
+    // --- 2. Scramjet Search Event Listener ---
+    const searchInput = document.getElementById('search-input');
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (query) {
+          let url = query;
+          
+          // Check if input is a search term or a direct URL
+          if (!/^https?:\/\//i.test(query) && !query.includes('.')) {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+          } else if (!/^https?:\/\//i.test(query)) {
+            url = 'http://' + query;
+          }
+
+          // Dynamically read prefix from your loaded scramjet.config.js
+          const prefix = window.__scramjet$config?.prefix || '/service/';
+          
+          // Redirect the user through the proxy path
+          window.location.href = prefix + encodeURIComponent(url);
+        }
+      }
+    });
+
+    // Event Listeners for Theme
+    window.addEventListener('DOMContentLoaded', applyLocalTheme);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pond-theme') applyLocalTheme();
+    });
+  </script>
+</body>
+</html>
