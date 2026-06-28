@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css" />
-    
     <link rel="stylesheet" href="style.css">
 
     <script src="/scramjet.config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tomphttp/bare-mux@2.1.7/dist/index.js"></script>
 </head>
 <body>
 
@@ -24,7 +24,28 @@
   </div>
 
   <script>
-    // --- Theme Logic ---
+    // --- 1. Service Worker & Bare-Mux Connection Setup ---
+    async function initProxy() {
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/scramjet.worker.js', {
+            scope: window.__scramjet$config?.prefix || '/service/'
+          });
+
+          // Connects your HTML page to the Shared Worker script you provided
+          const connection = new BareMux.BareMuxConnection("/mux-worker.js");
+          
+          // Set up the remote Wisp transport backend
+          await connection.setTransport("FluxTransport", [window.__scramjet$config.wisp]);
+          console.log("Proxy engine ready on Vercel backend!");
+        } catch (err) {
+          console.error("Proxy registration failed:", err);
+        }
+      }
+    }
+    initProxy();
+
+    // --- 2. Theme Logic ---
     function applyLocalTheme() {
       const themeColors = {
         light:    ['#f7f7f7', '#ffffff'],
@@ -44,7 +65,7 @@
       }
     }
 
-    // --- 2. Scramjet Search Event Listener ---
+    // --- 3. Search Routine Execution ---
     const searchInput = document.getElementById('search-input');
 
     searchInput.addEventListener('keydown', (event) => {
@@ -53,23 +74,20 @@
         if (query) {
           let url = query;
           
-          // Check if input is a search term or a direct URL
           if (!/^https?:\/\//i.test(query) && !query.includes('.')) {
             url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
           } else if (!/^https?:\/\//i.test(query)) {
             url = 'http://' + query;
           }
 
-          // Dynamically read prefix from your loaded scramjet.config.js
-          const prefix = window.__scramjet$config?.prefix || '/service/';
-          
-          // Redirect the user through the proxy path
-          window.location.href = prefix + encodeURIComponent(url);
+          const config = window.__scramjet$config;
+          if (config) {
+            window.location.href = config.prefix + config.encodeUrl(url);
+          }
         }
       }
     });
 
-    // Event Listeners for Theme
     window.addEventListener('DOMContentLoaded', applyLocalTheme);
     window.addEventListener('storage', (e) => {
       if (e.key === 'pond-theme') applyLocalTheme();
