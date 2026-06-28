@@ -1,4 +1,3 @@
-// Simple XOR / Scramble function to obfuscate proxy path strings
 function scramble(str) {
     if (!str) return str;
     return encodeURIComponent(
@@ -14,7 +13,8 @@ function unscramble(str) {
 
 self.__scramjet$config = {
     prefix: '/service/',
-    bare: '/bare/',
+    // A public, community-hosted Wisp server endpoint for Vercel users:
+    wisp: 'wss://wisp.mercurywork.shop/', 
     encodeUrl: scramble,
     decodeUrl: unscramble
 };
